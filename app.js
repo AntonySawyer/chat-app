@@ -22,7 +22,7 @@ mongoose.connect('mongodb://localhost/chat')
   .then(() => console.log('mongodb: connection successful'))
   .catch((err) => console.error(err));
 
-  const MesageModel = require('./models/message');
+const MesageModel = require('./models/message');
 
 const server = app.listen('4444', () => console.log('Server is running...'));
 
@@ -32,15 +32,20 @@ let newUserName = '';
 
 io.on('connection', (socket) => {
   socket.username = newUserName;
+  const history = [];
+  MesageModel.find({}, (err, result) => {
+    result.forEach(el => history.push([el.message, el.username, el.datetime]));
+    return result;
+  });
   socket.on('user_connected', (data) => {
     socket.emit('user_data', {
       username: socket.username,
-      id: socket.newUserId,
+      history,
     });
   });
 
   socket.on('new_message', (data) => {
-    const datetime = Date.now().toString();
+    const datetime = new Date(Date.now());
     io.sockets.emit('add_mess', {
       message: data.message,
       username: socket.username,
@@ -142,16 +147,16 @@ app.get('/logout', function (req, res) {
 
 function mustAuthenticatedMw(req, res, next) {
   if (req.isAuthenticated()) {
-      newUserName = req.user.doc.username;
+    newUserName = req.user.doc.username;
     res.sendFile(path.join(`${__dirname}/public/chat.html`));
 
-    } else {
-      res.redirect('/');
-    }
+  } else {
+    res.redirect('/');
   }
+}
 
-  app.get('/chat', mustAuthenticatedMw);
+app.get('/chat', mustAuthenticatedMw);
 
-  app.get('/', (req, res) => {
-    res.sendFile(path.join(`${__dirname}/public/index.html`));
-  });
+app.get('/', (req, res) => {
+  res.sendFile(path.join(`${__dirname}/public/index.html`));
+});

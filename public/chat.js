@@ -5,20 +5,40 @@ window.onload = () => {
   const sendBtn = document.getElementById('sendBtn');
 
   let currentUserName = 'Anonymous';
+  let history;
 
   socket.emit('user_connected');
   socket.on('user_data', (data) => {
     currentUserName = data.username;
-    document.querySelector('a[href="/logout"]').before(`Hi, ${currentUserName}   `);
+    history = data.history;
+    document.querySelector('a[href="/logout"]').before(`Hi, ${currentUserName}`);
+    console.log(history);
+    showHistory();
   });
 
-  sendBtn.addEventListener('click', () => {
+  function showHistory() {
+    history.forEach(msg => drawMessage({
+      message: msg[0], username: msg[1], datetime: msg[2],
+    }));
+  }
+
+  function submitMessage() {
     socket.emit('new_message', {
       message: inputField.value,
       username: currentUserName,
     });
     inputField.value = '';
+  }
+
+  sendBtn.addEventListener('click', () => {
+    submitMessage();
   });
+
+  window.addEventListener('keypress', (e) => {
+    if (e.keyCode === 13 && e.shiftKey) {
+      submitMessage();
+    }
+  })
 
   const moveScroll = () => {
     messageBlock.scrollTop = messageBlock.scrollHeight;
@@ -30,15 +50,19 @@ window.onload = () => {
     if (isInformerExist()) {
       document.querySelector('.informer').remove();
     }
-    const datetime = new Date(Number(data.datetime));
+    drawMessage(data);
+  });
+
+  function drawMessage(msg) {
+    const datetime = new Date(msg.datetime);
     const datetimeFormated = `${datetime.getDate()}.${datetime.getMonth()}.${datetime.getFullYear()} ${datetime.getHours()}:${datetime.getMinutes()}:${datetime.getSeconds()}`;
     const newMessage = document.createElement('p');
-    newMessage.classList.add(data.username === currentUserName ? 'from-me' : 'from-them');
-    newMessage.innerHTML = `<b>${data.username}:</b>\n${data.message}`;
+    newMessage.classList.add(msg.username === currentUserName ? 'from-me' : 'from-them');
+    newMessage.innerHTML = `<b>${msg.username}:</b>\n${msg.message}`;
     newMessage.innerHTML += `<span class="badge badge-pill badge-light">${datetimeFormated}</span>`;
     messageBlock.append(newMessage);
     moveScroll();
-  });
+  }
 
   inputField.addEventListener('keypress', () => {
     socket.emit('typing');
