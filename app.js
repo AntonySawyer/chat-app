@@ -3,6 +3,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
+const mongoose = require('mongoose');
 
 const app = express();
 
@@ -17,28 +18,38 @@ app.use(session({
   resave: true,
 }));
 
+mongoose.connect('mongodb://localhost/chat')
+  .then(() => console.log('mongodb: connection successful'))
+  .catch((err) => console.error(err));
 
-const server = app.listen('3000', () => console.log('Server is running...'));
+  const MesageModel = require('./models/message');
+
+const server = app.listen('4444', () => console.log('Server is running...'));
 
 const io = require('socket.io')(server);
 
 let newUserName = '';
-let newUserId = '';
 
 io.on('connection', (socket) => {
   socket.username = newUserName;
-  socket.newUserId = newUserId;
   socket.on('user_connected', (data) => {
     socket.emit('user_data', {
       username: socket.username,
       id: socket.newUserId,
-    })
+    });
   });
 
   socket.on('new_message', (data) => {
+    const datetime = Date.now().toString();
     io.sockets.emit('add_mess', {
       message: data.message,
       username: socket.username,
+      datetime,
+    });
+    MesageModel.create({
+      message: data.message,
+      username: data.username,
+      datetime,
     });
   });
 
@@ -48,12 +59,6 @@ io.on('connection', (socket) => {
     });
   });
 });
-
-const mongoose = require('mongoose');
-
-mongoose.connect('mongodb://localhost/chat')
-  .then(() => console.log('mongodb: connection successful'))
-  .catch((err) => console.error(err));
 
 
 const passport = require('passport');
@@ -123,7 +128,6 @@ app.post('/login', (req, res, next) => {
     next(err) :
     user ?
     req.logIn(user, function (err) {
-      console.log('in inner')
       return err ?
         next(err) :
         res.redirect('/chat');
@@ -139,7 +143,6 @@ app.get('/logout', function (req, res) {
 function mustAuthenticatedMw(req, res, next) {
   if (req.isAuthenticated()) {
       newUserName = req.user.doc.username;
-      newUserId = req.user.doc._id;
     res.sendFile(path.join(`${__dirname}/public/chat.html`));
 
     } else {

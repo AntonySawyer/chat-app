@@ -26,6 +26,9 @@ body {
   overflow-x: hidden;
 }
 
+.badge {
+  display: block;
+}
 
 p {
   max-width: 255px;
