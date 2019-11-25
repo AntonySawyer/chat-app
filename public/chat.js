@@ -19,6 +19,7 @@ window.onload = () => {
     socket.emit('new_message', {
       message: inputField.value,
     });
+    inputField.value = '';
   });
 
   const moveScroll = () => {
@@ -28,7 +29,6 @@ window.onload = () => {
 
 
   socket.on('add_mess', (data) => {
-    inputField.value = '';
     if (isInformerExist()) {
       document.querySelector('.informer').remove();
     }
