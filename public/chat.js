@@ -4,6 +4,17 @@ window.onload = () => {
   const inputField = document.querySelector('textarea');
   const sendBtn = document.getElementById('sendBtn');
 
+  let currentUserName = 'Anonymous';
+  let currentUserId = '0';
+
+  socket.emit('user_connected');
+  socket.on('user_data', (data) => {
+    currentUserName = data.username;
+    currentUserId = data.id;
+    document.querySelector('a[href="/logout"]').before(`Hi, ${currentUserName}   `);
+  });
+
+
   sendBtn.addEventListener('click', () => {
     socket.emit('new_message', {
       message: inputField.value,
@@ -22,7 +33,7 @@ window.onload = () => {
       document.querySelector('.informer').remove();
     }
     const newMessage = document.createElement('p');
-    newMessage.classList.add(data.username === 'Anonymous' ? 'from-me' : 'from-them');
+    newMessage.classList.add(data.username === currentUserName ? 'from-me' : 'from-them');
     newMessage.innerHTML = `<b>${data.username}:</b>\n${data.message}`;
     messageBlock.append(newMessage);
     moveScroll();
