@@ -16,14 +16,46 @@ body {
   background-color: rgba(25, 147, 147, 0.2);
 }
 
+form {
+  max-width: 500px;
+  margin: 20% auto;
+}
+
+.form-text.text-muted {
+  display: inline;
+}
+.btn.btn-primary {
+  display: inline-block;
+}
+
+.form-row.align-items-center {
+  margin-bottom: 5px;
+}
+
+header {
+  display: flex;
+  justify-content: space-around;
+  padding-top: 5px;
+  margin: 0 auto;
+}
+
+.greeting {
+  line-height: 2;
+}
+
 .message-block {
   height: 80vh;
   display: flex;
   flex-direction: column;
-  margin: 24px auto 0 auto;
-  padding: 0 20px 0 0;
+  margin: 3px auto 0 auto;
+  padding: 0 20px 0 20px;
+  border: 1px solid lightblue;
   overflow-y: scroll;
   overflow-x: hidden;
+}
+
+#input_zone {
+  margin: 0 auto;
 }
 
 .badge {
@@ -95,14 +127,19 @@ p:after {
 
 /* Small screens */
 @media all and (max-width: 767px) {
-  .message-block {
+
+  header,
+  .message-block. #input_zone {
     width: 90%;
   }
 }
 
 /* Medium and large screens */
 @media all and (min-width: 768px) {
-  .message-block {
+
+  header,
+  .message-block,
+  #input_zone {
     width: 50%;
   }
 }

@@ -11,8 +11,7 @@ window.onload = () => {
   socket.on('user_data', (data) => {
     currentUserName = data.username;
     history = data.history;
-    document.querySelector('a[href="/logout"]').before(`Hi, ${currentUserName}`);
-    console.log(history);
+    document.querySelector('.greeting').append(`Hi, ${currentUserName}`);
     showHistory();
   });
 
